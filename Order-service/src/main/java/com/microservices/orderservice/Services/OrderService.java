@@ -9,6 +9,7 @@ import com.microservices.orderservice.Repository.OrderRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.Arrays;
 import java.util.List;
@@ -33,11 +34,16 @@ public class OrderService {
         orderRequest.setOrderLineItemsList(lineItems);
 
         List<String> skuCodes = lineItems.stream().map(OrderLineItems::getSkuCode).toList();
+
+        UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUriString("http://localhost:8083/api/inventory");
+        for (String skuCode : skuCodes) {
+            uriBuilder.queryParam("skuCode", skuCode);
+        }
         InventoryResponse[] inventoryResponses = webClient.get()
-                        .uri("http://localhost:8083/api/inventory/", uriBuilder -> uriBuilder.queryParam("skuCode", skuCodes).build())
+                        .uri(uriBuilder.build().toUri())
                                 .retrieve()
                                         .bodyToMono(InventoryResponse[].class)
-                                                .block();
+                                            .block();
 
         boolean allAreInStock = Arrays.stream(inventoryResponses).allMatch(InventoryResponse::isInStock);
         if(allAreInStock){

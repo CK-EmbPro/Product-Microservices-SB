@@ -13,10 +13,9 @@ import java.util.List;
 public class InventoryController {
     @Autowired
     public InventoryService inventoryService;
-
     @GetMapping
-    public ResponseEntity<List<InventoryResponse>> isInStock(@RequestParam List<String> skuCodes){
-        List<InventoryResponse> whatInStock = inventoryService.isInStock(skuCodes);
+    public ResponseEntity<List<InventoryResponse>> isInStock(@RequestParam List<String> skuCode){
+        List<InventoryResponse> whatInStock = inventoryService.isInStock(skuCode);
         return ResponseEntity.ok(whatInStock);
     }
 }
