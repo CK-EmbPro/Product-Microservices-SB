@@ -6,14 +6,14 @@
         <artifactId>parent</artifactId>
         <version>0.0.1-SNAPSHOT</version>
     </parent>
-    <artifactId>Discovery-server</artifactId>
-    <name>Archetype - Discovery-server</name>
+    <artifactId>ApiGateway</artifactId>
+    <name>Archetype - ApiGateway</name>
     <url>http://maven.apache.org</url>
 
     <dependencies>
         <dependency>
             <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-netflix-eureka-server</artifactId>
+            <artifactId>spring-cloud-starter-gateway-mvc</artifactId>
         </dependency>
 
         <dependency>

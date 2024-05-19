@@ -18,15 +18,16 @@ import java.util.UUID;
 @Service
 public class OrderService {
 
-    @Autowired
-    public OrderRepository orderRepo;
-    public  WebClient webClient;
+    private final OrderRepository orderRepo;
+    private final WebClient.Builder webClientBuilder;
 
-    public OrderService(WebClient webClient) {
-        this.webClient = webClient;
+    @Autowired
+    public OrderService(OrderRepository orderRepo, WebClient.Builder webClientBuilder) {
+        this.orderRepo = orderRepo;
+        this.webClientBuilder = webClientBuilder;
     }
 
-    public void placeOrder(OrderRequestDTO orderRequestDTO){
+    public void placeOrder(OrderRequestDTO orderRequestDTO) {
         Order orderRequest = new Order();
         orderRequest.setOrderNumber(UUID.randomUUID().toString());
 
@@ -35,20 +36,21 @@ public class OrderService {
 
         List<String> skuCodes = lineItems.stream().map(OrderLineItems::getSkuCode).toList();
 
-        UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUriString("http://localhost:8083/api/inventory");
+        UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUriString("http://localhost:8081/api/inventory");
         for (String skuCode : skuCodes) {
             uriBuilder.queryParam("skuCode", skuCode);
         }
-        InventoryResponse[] inventoryResponses = webClient.get()
-                        .uri(uriBuilder.build().toUri())
-                                .retrieve()
-                                        .bodyToMono(InventoryResponse[].class)
-                                            .block();
+
+        InventoryResponse[] inventoryResponses = webClientBuilder.build().get()
+                .uri(uriBuilder.build().toUri())
+                .retrieve()
+                .bodyToMono(InventoryResponse[].class)
+                .block();
 
         boolean allAreInStock = Arrays.stream(inventoryResponses).allMatch(InventoryResponse::isInStock);
-        if(allAreInStock){
+        if (allAreInStock) {
             orderRepo.save(orderRequest);
-        }else {
+        } else {
             throw new IllegalArgumentException("The product is not in stock, please try again later");
         }
     }
